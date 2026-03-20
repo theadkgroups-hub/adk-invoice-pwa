@@ -1,7 +1,7 @@
 const CACHE_NAME = 'adk-invoice-v2';
 const BASE_PATH = '/adk-invoice-pwa/';
 
-// Files to cache - note the base path
+// Files to cache
 const urlsToCache = [
   BASE_PATH,
   BASE_PATH + 'index.html',
@@ -10,77 +10,75 @@ const urlsToCache = [
   BASE_PATH + 'icon-512.png'
 ];
 
-// Install event - cache files
+// Install event
 self.addEventListener('install', event => {
+  console.log('Service Worker: Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache opened');
+        console.log('Service Worker: Caching files');
         return cache.addAll(urlsToCache);
       })
       .catch(err => {
-        console.log('Cache failed:', err);
+        console.log('Service Worker: Cache failed', err);
       })
   );
-  // Force the waiting service worker to become active
   self.skipWaiting();
 });
 
-// Fetch event - serve from cache first
+// Fetch event - serve from cache
 self.addEventListener('fetch', event => {
-  // Handle requests properly
-  let requestUrl = event.request.url;
+  const url = new URL(event.request.url);
   
-  // Check if request is for our app
-  if (requestUrl.includes('theadkgroups-hub.github.io') || requestUrl.includes('localhost')) {
+  // Only handle requests for our app
+  if (url.pathname.startsWith(BASE_PATH) || url.pathname === '/adk-invoice-pwa') {
     event.respondWith(
       caches.match(event.request)
         .then(response => {
           if (response) {
-            // Return cached version
+            console.log('Service Worker: Serving from cache:', event.request.url);
             return response;
           }
-          // If not in cache, fetch from network
+          console.log('Service Worker: Fetching from network:', event.request.url);
           return fetch(event.request)
-            .then(response => {
-              // Don't cache if not successful
-              if (!response || response.status !== 200) {
-                return response;
+            .then(networkResponse => {
+              // Cache successful responses
+              if (networkResponse && networkResponse.status === 200) {
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseToCache);
+                  });
               }
-              // Clone the response
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-              return response;
+              return networkResponse;
             });
         })
         .catch(() => {
-          // If offline and not in cache, return offline page
+          // If offline and not in cache, return index.html
+          console.log('Service Worker: Offline - returning index.html');
           return caches.match(BASE_PATH + 'index.html');
         })
     );
   } else {
-    // For external requests (like WhatsApp), just fetch
+    // For external requests, just fetch
     event.respondWith(fetch(event.request));
   }
 });
 
-// Activate event - clean up old caches
+// Activate event - clean old caches
 self.addEventListener('activate', event => {
+  console.log('Service Worker: Activating...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('Service Worker: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  // Take control of all clients immediately
   event.waitUntil(clients.claim());
 });
