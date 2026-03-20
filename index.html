@@ -786,16 +786,37 @@
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
         }
-    </script>
-    
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('✅ Service Worker registered!'))
-                    .catch(err => console.log('❌ Service Worker failed:', err));
-            });
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/adk-invoice-pwa/sw.js', { scope: '/adk-invoice-pwa/' })
+                .then(reg => {
+                    console.log('✅ Service Worker registered!', reg);
+                    // Check for updates
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('New content available - refresh to update');
+                                    showToast('🔄 App updated! Refresh to get latest version');
+                                }
+                            }
+                        };
+                    };
+                })
+                .catch(err => console.log('❌ Service Worker failed:', err));
+        });
+    }
+    
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        if (toast) {
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
         }
-    </script>
+    }
+</script>
 </body>
 </html>
