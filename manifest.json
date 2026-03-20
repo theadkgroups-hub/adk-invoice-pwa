@@ -1,8 +1,8 @@
 {
   "name": "ADK LaBs Invoice System",
   "short_name": "ADK Invoice",
-  "description": "Professional invoice management for your business",
-  "start_url": "index.html",
+  "description": "Professional Invoice Management System",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#2c3e50",
@@ -10,12 +10,14 @@
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
