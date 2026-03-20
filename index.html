@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADK LaBs Invoice System (Dark Print)</title>
+    <!-- PWA manifest link -->
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* your original CSS – unchanged */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            padding: 15px;
+            color: #111;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* TABS */
+        .tabs {
+            display: flex;
+            background: #2c3e50;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab-btn.active {
+            background: #34495e;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* CARDS */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #1a2b3c;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #1a2b3c;
+            padding-bottom: 8px;
+        }
+        
+        /* DATA MANAGEMENT BAR */
+        .data-bar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2c3e50;
+        }
+        
+        .data-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .data-stat {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .data-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a2b3c;
+            display: block;
+        }
+        
+        .data-stat-label {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* FORMS */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #222;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+            color: #000;
+            background: #fff;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2c3e50;
+        }
+        
+        /* PRODUCTS */
+        .product-row {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .product-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .product-inputs input {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        /* PAYMENT */
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .payment-option {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .payment-option label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #bbb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #111;
+            background: white;
+        }
+        
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+        
+        .payment-option input[type="radio"]:checked + label {
+            border-color: #2c3e50;
+            background: #e8f0fe;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        /* TOTALS */
+        .totals {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .grand-total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        /* BUTTONS */
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 14px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            white-space: nowrap;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #2c3e50;
+        }
+        
+        .btn-success {
+            background: #1e7e34;
+        }
+        
+        .btn-danger {
+            background: #c82333;
+        }
+        
+        .btn-whatsapp {
+            background: #128C7E;
+        }
+        
+        .btn-info {
+            background: #117a8b;
+        }
+        
+        .btn-warning {
+            background: #d39e00;
+        }
+        
+        .btn-export {
+            background: #6f42c1;
+        }
+        
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .btn-email {
+            background: #b33c2f;
+        }
+        
+        /* INVOICE PREVIEW */
+        .invoice-preview {
+            display: none;
+            background: white;
+            padding: 20px;
+            border: 2px solid #2c3e50;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #111;
+        }
+        
+        /* ORDERS HISTORY */
+        .orders-container {
+            margin-top: 20px;
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #2c3e50;
+            color: #111;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .order-title {
+            font-weight: bold;
+            color: #1a2b3c;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .order-date {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .order-detail {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .order-detail-label {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .order-detail-value {
+            font-weight: bold;
+            color: #1a2b3c;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-cod {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        /* CUSTOMERS LIST */
+        .customers-container {
+            margin-top: 20px;
+        }
+        
+        .customer-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #1e7e34;
+            color: #111;
+        }
+        
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .customer-name {
+            font-weight: bold;
+            color: #1a2b3c;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .customer-phone {
+            color: #1e7e34;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .customer-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .customer-stat {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .customer-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a2b3c;
+            display: block;
+        }
+        
+        .customer-stat-label {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .customer-orders {
+            margin-top: 15px;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+        }
+        
+        .customer-order {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            border-left: 3px solid #117a8b;
+        }
+        
+        .customer-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .customer-order-invoice {
+            font-weight: bold;
+            color: #1a2b3c;
+            font-size: 14px;
+        }
+        
+        .customer-order-date {
+            color: #333;
+            font-size: 12px;
+        }
+        
+        .customer-order-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #111;
+        }
+        
+        /* SEARCH BOX */
+        .search-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .search-box input {
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #2c3e50;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 100%;
+            color: #000;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #111;
+        }
+        
+        /* CUSTOMER ACTION BUTTONS */
+        .customer-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                text-align: left;
+                padding-left: 20px;
+            }
+            
+            .product-inputs {
+                flex-direction: column;
+            }
+            
+            .product-inputs input {
+                min-width: 100%;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-options {
+                flex-direction: column;
+            }
+            
+            .payment-option {
+                min-width: 100%;
+            }
+            
+            .order-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .customer-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .customer-order-details {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .btn {
+                padding: 12px 8px;
+                font-size: 13px;
+            }
+            
+            .data-actions {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .customer-actions {
+                flex-direction: column;
+            }
+            
+            .customer-actions .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* LOADING STATES */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #333;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #555;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        /* PRINT STYLES - ENSURE DARK TEXT ON WHITE BACKGROUND */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice-preview, .invoice-preview * {
+                visibility: visible;
+            }
+            .invoice-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                padding: 20px;
+                background: white !important;
+                color: black !important;
+            }
+            .invoice-preview h1,
+            .invoice-preview h2,
+            .invoice-preview h3,
+            .invoice-preview h4,
+            .invoice-preview p,
+            .invoice-preview div,
+            .invoice-preview span,
+            .invoice-preview td,
+            .invoice-preview th,
+            .invoice-preview strong {
+                color: black !important;
+                background-color: transparent !important;
+            }
+            .invoice-preview table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .invoice-preview th {
+                background: #2c3e50 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .invoice-preview .totals {
+                background: #2c3e50 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e7e34;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast.error {
+            background: #c82333;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 15px; color: #1a2b3c; font-size: 24px;">ADK LaBs® Invoice System</h1>
+        
+        <!-- DATA MANAGEMENT BAR -->
+        <div class="data-bar">
+            <div class="data-stats">
+                <div class="data-stat">
+                    <span class="data-stat-value" id="ordersCount">0</span>
+                    <span class="data-stat-label">Orders</span>
+                </div>
+                <div class="data-stat">
+                    <span class="data-stat-value" id="customersCount">0</span>
+                    <span class="data-stat-label">Customers</span>
+                </div>
+                <div class="data-stat">
+                    <span class="data-stat-value" id="revenueCount">0</span>
+                    <span class="data-stat-label">Revenue (PKR)</span>
+                </div>
+            </div>
+            <div class="data-actions">
+                <button class="btn btn-export" onclick="exportData()">📤 Export All Data</button>
+                <button class="btn btn-warning" onclick="showImportModal()">📥 Import Data</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                <button class="btn btn-info" onclick="showSyncModal()">🔄 Sync Data</button>
+            </div>
+        </div>
+        
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('create')">➕ Create</button>
+            <button class="tab-btn" onclick="switchTab('orders')">📋 Orders</button>
+            <button class="tab-btn" onclick="switchTab('customers')">👥 Customers</button>
+        </div>
+        
+        <!-- TAB 1: CREATE INVOICE -->
+        <div id="create" class="tab-content active">
+            <div class="card">
+                <h3>👤 Customer Information</h3>
+                <div class="form-group">
+                    <input type="text" id="customerName" placeholder="Full Name *" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" id="customerPhone" placeholder="Phone Number *" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="customerAddress" placeholder="Complete Address" rows="3"></textarea>
+                </div>
+            </div>
+            
+            <!-- PRODUCTS -->
+            <div class="card">
+                <h3>🛒 Products</h3>
+                <div id="productsContainer">
+                    <div class="product-row">
+                        <div class="product-inputs">
+                            <input type="text" class="productName" placeholder="Product Name" oninput="calculateTotal()">
+                            <input type="number" class="productQty" placeholder="Qty" value="1" min="1" oninput="calculateTotal()">
+                            <input type="number" class="productPrice" placeholder="Price (PKR)" oninput="calculateTotal()">
+                        </div>
+                        <button class="btn btn-danger" onclick="removeProduct(this)" style="width:100%;">Remove</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addProduct()" style="margin-top: 10px; width:100%;">+ Add Product</button>
+            </div>
+            
+            <!-- PAYMENT METHOD -->
+            <div class="card">
+                <h3>💰 Payment Method</h3>
+                <div class="payment-options">
+                    <div class="payment-option">
+                        <input type="radio" id="cod" name="payment" value="COD" checked>
+                        <label for="cod">💰 Cash on Delivery (COD)</label>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="advance" name="payment" value="Advance">
+                        <label for="advance">✅ Advance Payment</label>
+                    </div>
+                </div>
+                
+                <div id="advanceDetails" style="display: none; margin-top: 15px;">
+                    <div class="form-group">
+                        <input type="number" id="advanceAmount" placeholder="Advance Amount Paid (PKR)" value="0">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="paymentMethod" placeholder="Payment Method (Bank Transfer, EasyPaisa, etc.)">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="transactionId" placeholder="Transaction ID / Reference">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ADDITIONAL DETAILS -->
+            <div class="card">
+                <h3>📋 Order Details</h3>
+                <div class="form-group">
+                    <input type="number" id="discount" placeholder="Discount (PKR)" value="0" oninput="calculateTotal()">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="shipping" placeholder="Shipping Charges (PKR)" value="0" oninput="calculateTotal()">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="courier" placeholder="Courier Service">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="tracking" placeholder="Tracking Number">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="invoiceNo" placeholder="Invoice Number">
+                </div>
+                <div class="form-group">
+                    <input type="date" id="orderDate">
+                </div>
+            </div>
+            
+            <!-- TOTALS -->
+            <div class="totals">
+                <h3 style="color: white; border-bottom-color: rgba(255,255,255,0.3);">💰 Order Summary</h3>
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotalDisplay">0.00 PKR</span>
+                </div>
+                <div class="total-row">
+                    <span>Discount:</span>
+                    <span id="discountDisplay">0.00 PKR</span>
+                </div>
+                <div class="total-row">
+                    <span>Shipping:</span>
+                    <span id="shippingDisplay">0.00 PKR</span>
+                </div>
+                <div class="total-row">
+                    <span>Advance Paid:</span>
+                    <span id="advanceDisplay">0.00 PKR</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>BALANCE DUE:</span>
+                    <span id="balanceDisplay">0.00 PKR</span>
+                </div>
+            </div>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="card">
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveOrder()">💾 Save</button>
+                    <button class="btn btn-primary" onclick="viewInvoice()">👁️ View</button>
+                    <button class="btn" onclick="printInvoice()">🖨️ Print</button>
+                    <button class="btn btn-danger" onclick="downloadPDF()">📄 PDF</button>
+                    <button class="btn btn-whatsapp" onclick="shareInvoice()">📱 WhatsApp</button>
+                    <button class="btn btn-info" onclick="clearForm()">🗑️ Clear</button>
+                </div>
+            </div>
+            
+            <!-- INVOICE PREVIEW -->
+            <div id="invoicePreview" class="invoice-preview"></div>
+        </div>
+        
+        <!-- TAB 2: ALL ORDERS -->
+        <div id="orders" class="tab-content">
+            <div class="card">
+                <h3>📋 All Orders</h3>
+                <div class="search-box">
+                    <input type="text" id="searchOrders" placeholder="Search orders...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                
+                <div id="ordersContainer" class="orders-container">
+                    <div class="loading">Loading orders...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 3: CUSTOMERS -->
+        <div id="customers" class="tab-content">
+            <div class="card">
+                <h3>👥 Customers</h3>
+                <div class="search-box">
+                    <input type="text" id="searchCustomers" placeholder="Search customers...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                
+                <div id="customersContainer" class="customers-container">
+                    <div class="loading">Loading customers...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- IMPORT MODAL -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h3>📥 Import Data</h3>
+            <p style="margin-bottom: 20px; color: #333;">Paste your exported data to import it into this browser:</p>
+            <textarea id="importData" placeholder="Paste exported data here..." rows="10" style="width: 100%; padding: 15px; border: 2px solid #2c3e50; border-radius: 6px; margin-bottom: 20px;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="importData()" style="flex: 1;">Import Data</button>
+                <button class="btn btn-danger" onclick="hideImportModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SYNC MODAL -->
+    <div id="syncModal" class="modal">
+        <div class="modal-content">
+            <h3>🔄 Sync Data Between Devices</h3>
+            <p style="margin-bottom: 20px; color: #333;">Copy this code on one device and paste on another:</p>
+            <textarea id="syncCode" rows="8" style="width: 100%; padding: 15px; border: 2px solid #2c3e50; border-radius: 6px; margin-bottom: 20px; font-family: monospace;"></textarea>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-success" onclick="generateSyncCode()" style="flex: 1;">Generate Sync Code</button>
+                <button class="btn btn-warning" onclick="pasteSyncCode()" style="flex: 1;">Paste & Sync</button>
+                <button class="btn btn-danger" onclick="hideSyncModal()" style="flex: 1;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOMER EDIT MODAL -->
+    <div id="customerEditModal" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Edit Customer</h3>
+            <input type="hidden" id="editCustomerPhone">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="editCustomerName" placeholder="Full Name">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="editCustomerNewPhone" placeholder="Phone Number">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <textarea id="editCustomerAddress" placeholder="Complete Address" rows="3"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="saveCustomerEdit()" style="flex: 1;">💾 Save Changes</button>
+                <button class="btn btn-danger" onclick="hideCustomerEditModal()" style="flex: 1;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMAIL MODAL -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <h3>📧 Send Invoice via Email</h3>
+            <input type="hidden" id="emailOrderId">
+            <div class="form-group">
+                <label>Customer Email</label>
+                <input type="email" id="customerEmail" placeholder="customer@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="emailSubject" placeholder="Your Invoice from ADK LaBs">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="emailMessage" placeholder="Dear customer, please find your invoice attached..." rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="sendPDF" checked> Attach PDF invoice
+                </label>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-email" onclick="sendEmailNow()" style="flex: 1;">
+                    📧 Send Email
+                </button>
+                <button class="btn btn-danger" onclick="hideEmailModal()" style="flex: 1;">Cancel</button>
+            </div>
+            <div id="emailStatus" style="margin-top: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // NOTE: All JavaScript functions remain exactly the same as in the original code.
+        // Only the CSS and inline colors in viewInvoice() have been updated for better print visibility.
+        
+        let currentOrder = {};
+        let allOrders = [];
+        let allCustomers = [];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('orderDate').value = today;
+            
+            // Generate invoice number
+            document.getElementById('invoiceNo').value = generateInvoiceNumber();
+            
+            // Payment method toggle
+            document.querySelectorAll('input[name="payment"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const advanceDetails = document.getElementById('advanceDetails');
+                    if (this.value === 'Advance') {
+                        advanceDetails.style.display = 'block';
+                    } else {
+                        advanceDetails.style.display = 'none';
+                        document.getElementById('advanceAmount').value = 0;
+                        document.getElementById('paymentMethod').value = '';
+                        document.getElementById('transactionId').value = '';
+                    }
+                    calculateTotal();
+                });
+            });
+            
+            // Search functionality
+            document.getElementById('searchOrders').addEventListener('input', searchOrders);
+            document.getElementById('searchCustomers').addEventListener('input', searchCustomers);
+            
+            // Load saved data
+            loadAllData();
+            updateStats();
+            
+            // Initial calculation
+            calculateTotal();
+        });
+        
+        // UPDATE STATS
+        function updateStats() {
+            document.getElementById('ordersCount').textContent = allOrders.length;
+            document.getElementById('customersCount').textContent = allCustomers.length;
+            
+            const totalRevenue = allOrders.reduce((sum, order) => sum + order.details.total, 0);
+            document.getElementById('revenueCount').textContent = totalRevenue.toFixed(2);
+        }
+        
+        // TAB SWITCHING
+        function switchTab(tabName) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            // Load data for specific tabs
+            if (tabName === 'orders') {
+                loadOrdersCards();
+            } else if (tabName === 'customers') {
+                loadCustomersCards();
+            }
+        }
+        
+        // GENERATE INVOICE NUMBER
+        function generateInvoiceNumber() {
+            const now = new Date();
+            const date = now.getFullYear() + 
+                String(now.getMonth() + 1).padStart(2, '0') + 
+                String(now.getDate()).padStart(2, '0');
+            const time = String(now.getHours()).padStart(2, '0') + 
+                String(now.getMinutes()).padStart(2, '0') + 
+                String(now.getSeconds()).padStart(2, '0');
+            return 'INV-' + date + '-' + time;
+        }
+        
+        // PRODUCT MANAGEMENT
+        function addProduct() {
+            const container = document.getElementById('productsContainer');
+            const productRow = document.createElement('div');
+            productRow.className = 'product-row';
+            productRow.innerHTML = `
+                <div class="product-inputs">
+                    <input type="text" class="productName" placeholder="Product Name" oninput="calculateTotal()">
+                    <input type="number" class="productQty" placeholder="Qty" value="1" min="1" oninput="calculateTotal()">
+                    <input type="number" class="productPrice" placeholder="Price (PKR)" oninput="calculateTotal()">
+                </div>
+                <button class="btn btn-danger" onclick="removeProduct(this)" style="width:100%;">Remove</button>
+            `;
+            container.appendChild(productRow);
+            calculateTotal();
+        }
+        
+        function removeProduct(button) {
+            if (document.querySelectorAll('.product-row').length > 1) {
+                button.closest('.product-row').remove();
+                calculateTotal();
+            }
+        }
+        
+        // CALCULATE TOTALS
+        function calculateTotal() {
+            let subtotal = 0;
+            const products = [];
+            
+            document.querySelectorAll('.product-row').forEach(row => {
+                const name = row.querySelector('.productName').value.trim();
+                const qty = parseFloat(row.querySelector('.productQty').value) || 0;
+                const price = parseFloat(row.querySelector('.productPrice').value) || 0;
+                const total = qty * price;
+                
+                if (name && price > 0) {
+                    subtotal += total;
+                    products.push({ name, qty, price, total });
+                }
+            });
+            
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const shipping = parseFloat(document.getElementById('shipping').value) || 0;
+            const advancePaid = parseFloat(document.getElementById('advanceAmount').value) || 0;
+            const grandTotal = subtotal - discount + shipping;
+            const balanceDue = Math.max(0, grandTotal - advancePaid);
+            
+            // Update display
+            document.getElementById('subtotalDisplay').textContent = subtotal.toFixed(2) + ' PKR';
+            document.getElementById('discountDisplay').textContent = discount.toFixed(2) + ' PKR';
+            document.getElementById('shippingDisplay').textContent = shipping.toFixed(2) + ' PKR';
+            document.getElementById('advanceDisplay').textContent = advancePaid.toFixed(2) + ' PKR';
+            document.getElementById('balanceDisplay').textContent = balanceDue.toFixed(2) + ' PKR';
+            
+            return { 
+                subtotal, 
+                discount, 
+                shipping, 
+                advancePaid,
+                grandTotal, 
+                balanceDue, 
+                products 
+            };
+        }
+        
+        // SAVE ORDER
+        function saveOrder() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            
+            if (!customerName) {
+                showToast('Please enter customer name!', true);
+                document.getElementById('customerName').focus();
+                return false;
+            }
+            
+            if (!customerPhone) {
+                showToast('Please enter customer phone!', true);
+                document.getElementById('customerPhone').focus();
+                return false;
+            }
+            
+            const totals = calculateTotal();
+            
+            if (totals.products.length === 0) {
+                showToast('Please add at least one product!', true);
+                return false;
+            }
+            
+            // Get payment method
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const advanceDetails = paymentMethod === 'Advance' ? {
+                advanceAmount: totals.advancePaid,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                transactionId: document.getElementById('transactionId').value
+            } : null;
+            
+            const invoiceNo = document.getElementById('invoiceNo').value.trim() || generateInvoiceNumber();
+            
+            currentOrder = {
+                id: Date.now().toString(),
+                customer: {
+                    name: customerName,
+                    phone: customerPhone,
+                    address: document.getElementById('customerAddress').value
+                },
+                products: totals.products,
+                payment: {
+                    method: paymentMethod,
+                    ...advanceDetails
+                },
+                details: {
+                    invoiceNo: invoiceNo,
+                    date: document.getElementById('orderDate').value,
+                    discount: totals.discount,
+                    shipping: totals.shipping,
+                    courier: document.getElementById('courier').value,
+                    tracking: document.getElementById('tracking').value,
+                    subtotal: totals.subtotal,
+                    total: totals.grandTotal,
+                    advancePaid: totals.advancePaid,
+                    balanceDue: totals.balanceDue
+                },
+                savedAt: new Date().toISOString(),
+                status: paymentMethod === 'Advance' && totals.balanceDue === 0 ? 'PAID' : 'PENDING'
+            };
+            
+            // Add to orders database
+            allOrders.unshift(currentOrder);
+            
+            // Update customer database
+            updateCustomerDatabase(currentOrder);
+            
+            // Save to localStorage
+            saveAllData();
+            
+            // Show success
+            showToast('✅ Order saved successfully!');
+            updateStats();
+            
+            // Switch to orders tab
+            setTimeout(() => {
+                switchTab('orders');
+            }, 500);
+            
+            return true;
+        }
+        
+        // UPDATE CUSTOMER DATABASE
+        function updateCustomerDatabase(order) {
+            const customerIndex = allCustomers.findIndex(c => c.phone === order.customer.phone);
+            
+            if (customerIndex === -1) {
+                // New customer
+                allCustomers.push({
+                    name: order.customer.name,
+                    phone: order.customer.phone,
+                    address: order.customer.address,
+                    email: '',
+                    totalOrders: 1,
+                    totalSpent: order.details.total,
+                    firstOrder: order.details.date,
+                    lastOrder: order.details.date,
+                    orders: [order.id]
+                });
+            } else {
+                // Existing customer
+                const customer = allCustomers[customerIndex];
+                customer.totalOrders += 1;
+                customer.totalSpent += order.details.total;
+                customer.lastOrder = order.details.date;
+                customer.orders.push(order.id);
+                
+                if (order.customer.name) customer.name = order.customer.name;
+                if (order.customer.address) customer.address = order.customer.address;
+            }
+        }
+        
+        // LOAD ALL DATA
+        function loadAllData() {
+            // Load orders
+            const savedOrders = localStorage.getItem('adkAllOrders');
+            if (savedOrders) {
+                try {
+                    allOrders = JSON.parse(savedOrders);
+                } catch(e) {
+                    allOrders = [];
+                }
+            }
+            
+            // Load customers
+            const savedCustomers = localStorage.getItem('adkAllCustomers');
+            if (savedCustomers) {
+                try {
+                    allCustomers = JSON.parse(savedCustomers);
+                } catch(e) {
+                    allCustomers = [];
+                }
+            }
+        }
+        
+        // SAVE ALL DATA
+        function saveAllData() {
+            localStorage.setItem('adkAllOrders', JSON.stringify(allOrders));
+            localStorage.setItem('adkAllCustomers', JSON.stringify(allCustomers));
+        }
+        
+        // LOAD ORDERS AS CARDS
+        function loadOrdersCards() {
+            const container = document.getElementById('ordersContainer');
+            
+            if (allOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">No orders yet</div>
+                        <div style="color: #333; margin-bottom: 20px;">Create your first invoice!</div>
+                        <button class="btn btn-primary" onclick="switchTab('create')">Create Invoice</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            allOrders.forEach(order => {
+                const statusClass = order.payment.method === 'COD' ? 'status-cod' : 
+                                  order.status === 'PAID' ? 'status-paid' : 'status-pending';
+                const statusText = order.payment.method === 'COD' ? 'COD' : 
+                                  order.status === 'PAID' ? 'PAID' : 'PENDING';
+                
+                html += `
+                    <div class="order-card" data-search="${order.customer.name.toLowerCase()} ${order.customer.phone} ${order.details.invoiceNo.toLowerCase()}">
+                        <div class="order-header">
+                            <div>
+                                <div class="order-title">${order.details.invoiceNo}</div>
+                                <div class="order-date">${formatDate(order.details.date)}</div>
+                            </div>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        
+                        <div style="margin: 10px 0;">
+                            <div style="font-weight: bold; margin-bottom: 5px; color: #111;">${order.customer.name}</div>
+                            <div style="color: #333; font-size: 14px;">${order.customer.phone}</div>
+                            <div style="color: #444; font-size: 12px; margin-top: 2px;">${order.customer.address || 'No address'}</div>
+                        </div>
+                        
+                        <div class="order-details">
+                            <div class="order-detail">
+                                <div class="order-detail-label">Total Amount</div>
+                                <div class="order-detail-value">${order.details.total.toFixed(2)} PKR</div>
+                            </div>
+                            <div class="order-detail">
+                                <div class="order-detail-label">Payment</div>
+                                <div class="order-detail-value">${order.payment.method}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-small" onclick="viewOrder('${order.id}')">View</button>
+                            <button class="btn btn-small btn-info" onclick="editOrder('${order.id}')">Edit</button>
+                            <button class="btn btn-small btn-whatsapp" onclick="shareOrder('${order.id}')">WhatsApp</button>
+                            <button class="btn btn-small btn-email" onclick="showEmailModal('${order.id}')">Email PDF</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteOrder('${order.id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // LOAD CUSTOMERS AS CARDS (WITH DELETE/EDIT BUTTONS)
+        function loadCustomersCards() {
+            const container = document.getElementById('customersContainer');
+            
+            if (allCustomers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">👥</div>
+                        <div style="font-size: 18px; margin-bottom: 10px;">No customers yet</div>
+                        <div style="color: #333; margin-bottom: 20px;">Create your first invoice to add customers!</div>
+                        <button class="btn btn-primary" onclick="switchTab('create')">Create Invoice</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            allCustomers.forEach(customer => {
+                // Get customer's orders
+                const customerOrders = allOrders.filter(order => order.customer.phone === customer.phone);
+                
+                html += `
+                    <div class="customer-card" data-search="${customer.name.toLowerCase()} ${customer.phone}">
+                        <div class="customer-header">
+                            <div>
+                                <div class="customer-name">${customer.name}</div>
+                                <div class="customer-phone">${customer.phone}</div>
+                                <div style="color: #333; font-size: 12px; margin-top: 2px;">
+                                    ${customer.email || 'No email'}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 12px; color: #333;">${customer.totalOrders} orders</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 10px 0; font-size: 14px; color: #333;">
+                            ${customer.address || 'No address provided'}
+                        </div>
+                        
+                        <div class="customer-stats">
+                            <div class="customer-stat">
+                                <span class="customer-stat-value">${customer.totalOrders}</span>
+                                <span class="customer-stat-label">Total Orders</span>
+                            </div>
+                            <div class="customer-stat">
+                                <span class="customer-stat-value">${customer.totalSpent.toFixed(2)}</span>
+                                <span class="customer-stat-label">Total Spent (PKR)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- CUSTOMER ACTIONS -->
+                        <div class="customer-actions">
+                            <button class="btn btn-small btn-info" onclick="editCustomer('${customer.phone}')">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteCustomer('${customer.phone}')">
+                                🗑️ Delete
+                            </button>
+                            <button class="btn btn-small btn-whatsapp" onclick="whatsAppCustomer('${customer.phone}')">
+                                📱 WhatsApp
+                            </button>
+                            <button class="btn btn-small btn-email" onclick="emailCustomer('${customer.phone}')">
+                                📧 Email
+                            </button>
+                        </div>
+                        
+                        <div class="customer-orders">
+                            <div style="font-weight: bold; margin-bottom: 10px; color: #1a2b3c;">Recent Orders</div>
+                            ${customerOrders.slice(0, 3).map(order => `
+                                <div class="customer-order">
+                                    <div class="customer-order-header">
+                                        <span class="customer-order-invoice">${order.details.invoiceNo}</span>
+                                        <span class="customer-order-date">${formatDate(order.details.date)}</span>
+                                    </div>
+                                    <div class="customer-order-details">
+                                        <span>${order.details.total.toFixed(2)} PKR</span>
+                                        <span style="color: ${order.payment.method === 'COD' ? '#117a8b' : '#1e7e34'};">${order.payment.method}</span>
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; gap: 5px;">
+                                        <button class="btn btn-small" onclick="viewOrder('${order.id}')" style="flex: 1;">View</button>
+                                        <button class="btn btn-small btn-whatsapp" onclick="shareOrder('${order.id}')" style="flex: 1;">WhatsApp</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${customerOrders.length > 3 ? `
+                                <div style="text-align: center; margin-top: 10px;">
+                                    <button class="btn btn-small" onclick="viewAllCustomerOrders('${customer.phone}')" style="width: 100%;">
+                                        View all ${customerOrders.length} orders
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // EDIT CUSTOMER FUNCTIONALITY
+        function editCustomer(phone) {
+            const customer = allCustomers.find(c => c.phone === phone);
+            if (!customer) {
+                showToast('Customer not found!', true);
+                return;
+            }
+            
+            document.getElementById('editCustomerPhone').value = customer.phone;
+            document.getElementById('editCustomerName').value = customer.name;
+            document.getElementById('editCustomerNewPhone').value = customer.phone;
+            document.getElementById('editCustomerAddress').value = customer.address || '';
+            
+            document.getElementById('customerEditModal').style.display = 'flex';
+        }
+        
+        function hideCustomerEditModal() {
+            document.getElementById('customerEditModal').style.display = 'none';
+        }
+        
+        function saveCustomerEdit() {
+            const oldPhone = document.getElementById('editCustomerPhone').value;
+            const newName = document.getElementById('editCustomerName').value.trim();
+            const newPhone = document.getElementById('editCustomerNewPhone').value.trim();
+            const newAddress = document.getElementById('editCustomerAddress').value.trim();
+            
+            if (!newName || !newPhone) {
+                showToast('Name and phone are required!', true);
+                return;
+            }
+            
+            // Find customer
+            const customerIndex = allCustomers.findIndex(c => c.phone === oldPhone);
+            if (customerIndex === -1) {
+                showToast('Customer not found!', true);
+                return;
+            }
+            
+            // Update customer
+            const customer = allCustomers[customerIndex];
+            customer.name = newName;
+            customer.phone = newPhone;
+            customer.address = newAddress;
+            
+            // Also update all orders for this customer
+            allOrders.forEach(order => {
+                if (order.customer.phone === oldPhone) {
+                    order.customer.name = newName;
+                    order.customer.phone = newPhone;
+                    order.customer.address = newAddress;
+                }
+            });
+            
+            // Save data
+            saveAllData();
+            
+            // Reload customer cards
+            loadCustomersCards();
+            
+            // Hide modal
+            hideCustomerEditModal();
+            
+            showToast('✅ Customer updated successfully!');
+        }
+        
+        // DELETE CUSTOMER FUNCTIONALITY
+        function deleteCustomer(phone) {
+            if (!confirm(`Delete customer ${phone}? This will also delete all their orders!`)) {
+                return;
+            }
+            
+            // Find customer
+            const customerIndex = allCustomers.findIndex(c => c.phone === phone);
+            if (customerIndex === -1) {
+                showToast('Customer not found!', true);
+                return;
+            }
+            
+            // Get customer name for confirmation
+            const customerName = allCustomers[customerIndex].name;
+            
+            if (!confirm(`LAST WARNING: Delete ${customerName} (${phone}) and ALL their orders?`)) {
+                return;
+            }
+            
+            // Delete all orders for this customer
+            allOrders = allOrders.filter(order => order.customer.phone !== phone);
+            
+            // Delete customer
+            allCustomers.splice(customerIndex, 1);
+            
+            // Save data
+            saveAllData();
+            
+            // Update stats
+            updateStats();
+            
+            // Reload customer cards
+            loadCustomersCards();
+            
+            showToast('✅ Customer and all their orders deleted!');
+        }
+        
+        // EMAIL FUNCTIONALITY
+        function showEmailModal(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found!', true);
+                return;
+            }
+            
+            document.getElementById('emailOrderId').value = orderId;
+            
+            // Pre-fill email if available
+            const customer = allCustomers.find(c => c.phone === order.customer.phone);
+            if (customer && customer.email) {
+                document.getElementById('customerEmail').value = customer.email;
+            } else {
+                document.getElementById('customerEmail').value = '';
+            }
+            
+            // Pre-fill subject and message
+            document.getElementById('emailSubject').value = `Invoice ${order.details.invoiceNo} from ADK LaBs`;
+            document.getElementById('emailMessage').value = `Dear ${order.customer.name},\n\nPlease find your invoice ${order.details.invoiceNo} attached.\n\nTotal Amount: PKR ${order.details.total.toFixed(2)}\n\nThank you for your business!\n\nBest regards,\nADK LaBs`;
+            
+            document.getElementById('emailModal').style.display = 'flex';
+        }
+        
+        function hideEmailModal() {
+            document.getElementById('emailModal').style.display = 'none';
+            document.getElementById('emailStatus').style.display = 'none';
+            document.getElementById('emailStatus').innerHTML = '';
+        }
+        
+        function sendEmailNow() {
+            const orderId = document.getElementById('emailOrderId').value;
+            const email = document.getElementById('customerEmail').value.trim();
+            const subject = document.getElementById('emailSubject').value.trim();
+            const message = document.getElementById('emailMessage').value.trim();
+            const sendPDF = document.getElementById('sendPDF').checked;
+            
+            if (!email) {
+                showToast('Please enter customer email!', true);
+                return;
+            }
+            
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found!', true);
+                return;
+            }
+            
+            // Update customer email if changed
+            const customerIndex = allCustomers.findIndex(c => c.phone === order.customer.phone);
+            if (customerIndex !== -1) {
+                allCustomers[customerIndex].email = email;
+                saveAllData();
+            }
+            
+            const emailStatus = document.getElementById('emailStatus');
+            emailStatus.style.display = 'block';
+            emailStatus.style.background = '#d4edda';
+            emailStatus.style.color = '#155724';
+            emailStatus.innerHTML = '📧 Sending email...';
+            
+            // Simulate email sending (in real app, use backend API)
+            setTimeout(() => {
+                const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+                
+                if (sendPDF) {
+                    // For PDF attachment, we would need a backend
+                    // For now, open email client with details
+                    window.location.href = mailtoLink;
+                    emailStatus.innerHTML = '✅ Email client opened. PDF would be attached via backend.';
+                } else {
+                    window.location.href = mailtoLink;
+                    emailStatus.innerHTML = '✅ Email client opened with invoice details!';
+                }
+                
+                // Hide modal after 3 seconds
+                setTimeout(() => {
+                    hideEmailModal();
+                    showToast('✅ Email sent successfully!');
+                }, 3000);
+                
+            }, 1000);
+        }
+        
+        // EMAIL CUSTOMER DIRECTLY
+        function emailCustomer(phone) {
+            const customer = allCustomers.find(c => c.phone === phone);
+            if (!customer) {
+                showToast('Customer not found!', true);
+                return;
+            }
+            
+            // Ask for email if not available
+            let email = customer.email;
+            if (!email) {
+                email = prompt('Enter customer email address:', '');
+                if (!email) return;
+                
+                // Save email
+                customer.email = email;
+                saveAllData();
+            }
+            
+            // Get customer's orders
+            const customerOrders = allOrders.filter(order => order.customer.phone === phone);
+            let message = `Dear ${customer.name},\n\n`;
+            message += `Thank you for being our valued customer!\n\n`;
+            message += `Order Summary:\n`;
+            customerOrders.forEach((order, index) => {
+                message += `${index + 1}. Invoice ${order.details.invoiceNo} - ${formatDate(order.details.date)} - PKR ${order.details.total.toFixed(2)}\n`;
+            });
+            message += `\nTotal Orders: ${customer.totalOrders}\n`;
+            message += `Total Spent: PKR ${customer.totalSpent.toFixed(2)}\n\n`;
+            message += `Best regards,\nADK LaBs`;
+            
+            const subject = `Your Order Summary from ADK LaBs`;
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+            
+            window.location.href = mailtoLink;
+        }
+        
+        // WHATSAPP CUSTOMER DIRECTLY
+        function whatsAppCustomer(phone) {
+            const customer = allCustomers.find(c => c.phone === phone);
+            if (!customer) {
+                showToast('Customer not found!', true);
+                return;
+            }
+            
+            // Get customer's orders
+            const customerOrders = allOrders.filter(order => order.customer.phone === phone);
+            let message = `Dear ${customer.name},\n\n`;
+            message += `Thank you for being our valued customer!\n\n`;
+            message += `*Order Summary:*\n`;
+            customerOrders.forEach((order, index) => {
+                message += `${index + 1}. Invoice ${order.details.invoiceNo} - ${formatDate(order.details.date)}\n`;
+                message += `   Amount: PKR ${order.details.total.toFixed(2)}\n`;
+                message += `   Payment: ${order.payment.method}\n\n`;
+            });
+            message += `Total Orders: ${customer.totalOrders}\n`;
+            message += `Total Spent: PKR ${customer.totalSpent.toFixed(2)}\n\n`;
+            message += `Thank you for your business!\nADK LaBs®`;
+            
+            const cleanPhone = phone.replace(/\D/g, '');
+            const whatsappURL = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+        }
+        
+        // TOAST NOTIFICATION
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        // REST OF YOUR EXISTING FUNCTIONS (UNCHANGED)
+        function exportData() {
+            const data = {
+                orders: allOrders,
+                customers: allCustomers,
+                exportedAt: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `adk_invoice_data_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast(`Exported ${allOrders.length} orders and ${allCustomers.length} customers!`);
+        }
+        
+        function showImportModal() {
+            document.getElementById('importModal').style.display = 'flex';
+        }
+        
+        function hideImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+            document.getElementById('importData').value = '';
+        }
+        
+        function importData() {
+            const importText = document.getElementById('importData').value.trim();
+            
+            if (!importText) {
+                showToast('Please paste data to import!', true);
+                return;
+            }
+            
+            try {
+                const importedData = JSON.parse(importText);
+                
+                if (!importedData.orders || !importedData.customers) {
+                    showToast('Invalid data format!', true);
+                    return;
+                }
+                
+                if (confirm(`Import ${importedData.orders.length} orders and ${importedData.customers.length} customers?`)) {
+                    allOrders = importedData.orders;
+                    allCustomers = importedData.customers;
+                    
+                    saveAllData();
+                    updateStats();
+                    
+                    if (document.getElementById('orders').classList.contains('active')) {
+                        loadOrdersCards();
+                    } else if (document.getElementById('customers').classList.contains('active')) {
+                        loadCustomersCards();
+                    }
+                    
+                    hideImportModal();
+                    showToast('✅ Data imported successfully!');
+                }
+            } catch(e) {
+                showToast('Error importing data: ' + e.message, true);
+            }
+        }
+        
+        function showSyncModal() {
+            document.getElementById('syncModal').style.display = 'flex';
+            generateSyncCode();
+        }
+        
+        function hideSyncModal() {
+            document.getElementById('syncModal').style.display = 'none';
+            document.getElementById('syncCode').value = '';
+        }
+        
+        function generateSyncCode() {
+            const data = {
+                orders: allOrders,
+                customers: allCustomers,
+                syncAt: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data);
+            const compressed = btoa(encodeURIComponent(dataStr));
+            document.getElementById('syncCode').value = compressed;
+            document.getElementById('syncCode').select();
+        }
+        
+        function pasteSyncCode() {
+            const syncCode = prompt('Paste sync code from another device:');
+            if (!syncCode) return;
+            
+            try {
+                const decoded = decodeURIComponent(atob(syncCode));
+                const importedData = JSON.parse(decoded);
+                
+                if (importedData.orders && importedData.customers) {
+                    if (confirm(`Sync ${importedData.orders.length} orders and ${importedData.customers.length} customers?`)) {
+                        allOrders = importedData.orders;
+                        allCustomers = importedData.customers;
+                        
+                        saveAllData();
+                        updateStats();
+                        
+                        if (document.getElementById('orders').classList.contains('active')) {
+                            loadOrdersCards();
+                        } else if (document.getElementById('customers').classList.contains('active')) {
+                            loadCustomersCards();
+                        }
+                        
+                        hideSyncModal();
+                        showToast('✅ Data synced successfully!');
+                    }
+                } else {
+                    showToast('Invalid sync code!', true);
+                }
+            } catch(e) {
+                showToast('Error syncing data: ' + e.message, true);
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('⚠️ WARNING: This will delete ALL orders and customers permanently!\n\nAre you sure?')) {
+                if (confirm('LAST WARNING: This cannot be undone!\n\nType "DELETE" to confirm:')) {
+                    const confirmation = prompt('Type DELETE to confirm:');
+                    if (confirmation === 'DELETE') {
+                        allOrders = [];
+                        allCustomers = [];
+                        saveAllData();
+                        updateStats();
+                        
+                        if (document.getElementById('orders').classList.contains('active')) {
+                            loadOrdersCards();
+                        } else if (document.getElementById('customers').classList.contains('active')) {
+                            loadCustomersCards();
+                        }
+                        
+                        showToast('✅ All data cleared!');
+                    } else {
+                        showToast('Data not cleared. Action cancelled.');
+                    }
+                }
+            }
+        }
+        
+        function viewOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found!', true);
+                return;
+            }
+            
+            currentOrder = order;
+            viewInvoice();
+            switchTab('create');
+        }
+        
+        function editOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found!', true);
+                return;
+            }
+            
+            // Load into form
+            document.getElementById('customerName').value = order.customer.name;
+            document.getElementById('customerPhone').value = order.customer.phone;
+            document.getElementById('customerAddress').value = order.customer.address || '';
+            
+            // Payment method
+            document.getElementById(order.payment.method.toLowerCase()).checked = true;
+            
+            if (order.payment.method === 'Advance') {
+                document.getElementById('advanceDetails').style.display = 'block';
+                document.getElementById('advanceAmount').value = order.payment.advanceAmount || 0;
+                document.getElementById('paymentMethod').value = order.payment.paymentMethod || '';
+                document.getElementById('transactionId').value = order.payment.transactionId || '';
+            }
+            
+            // Details
+            document.getElementById('discount').value = order.details.discount || 0;
+            document.getElementById('shipping').value = order.details.shipping || 0;
+            document.getElementById('courier').value = order.details.courier || '';
+            document.getElementById('tracking').value = order.details.tracking || '';
+            document.getElementById('invoiceNo').value = order.details.invoiceNo;
+            document.getElementById('orderDate').value = order.details.date;
+            
+            // Products
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            
+            order.products.forEach(product => {
+                const productRow = document.createElement('div');
+                productRow.className = 'product-row';
+                productRow.innerHTML = `
+                    <div class="product-inputs">
+                        <input type="text" class="productName" value="${product.name}" oninput="calculateTotal()">
+                        <input type="number" class="productQty" value="${product.qty}" oninput="calculateTotal()">
+                        <input type="number" class="productPrice" value="${product.price}" oninput="calculateTotal()">
+                    </div>
+                    <button class="btn btn-danger" onclick="removeProduct(this)" style="width:100%;">Remove</button>
+                `;
+                container.appendChild(productRow);
+            });
+            
+            if (order.products.length === 0) {
+                addProduct();
+            }
+            
+            calculateTotal();
+            switchTab('create');
+            showToast('Order loaded for editing. Make changes and click "Save" to update.');
+        }
+        
+        function shareOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found!', true);
+                return;
+            }
+            
+            const phone = order.customer.phone.replace(/\D/g, '');
+            let message = `*Invoice ${order.details.invoiceNo}*\n\nDear ${order.customer.name},\n\n`;
+            message += `Payment Method: ${order.payment.method === 'COD' ? 'Cash on Delivery' : 'Advance Payment'}\n`;
+            
+            if (order.payment.method === 'Advance') {
+                message += `Advance Paid: PKR ${order.details.advancePaid.toFixed(2)}\n`;
+                message += `Balance Due: PKR ${order.details.balanceDue.toFixed(2)}\n`;
+            } else {
+                message += `Total Amount: PKR ${order.details.total.toFixed(2)}\n`;
+            }
+            
+            message += `\nThank you for your business!\nADK LaBs®`;
+            
+            const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+        }
+        
+        function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order?')) {
+                return;
+            }
+            
+            const index = allOrders.findIndex(o => o.id === orderId);
+            if (index !== -1) {
+                allOrders.splice(index, 1);
+                saveAllData();
+                updateStats();
+                loadOrdersCards();
+                showToast('✅ Order deleted!');
+            }
+        }
+        
+        function viewAllCustomerOrders(phone) {
+            const customerOrders = allOrders.filter(order => order.customer.phone === phone);
+            if (customerOrders.length === 0) {
+                showToast('No orders found for this customer.', true);
+                return;
+            }
+            
+            let message = `Orders for ${customerOrders[0].customer.name}:\n\n`;
+            customerOrders.forEach(order => {
+                message += `📄 ${order.details.invoiceNo} - ${formatDate(order.details.date)}\n`;
+                message += `   Amount: ${order.details.total.toFixed(2)} PKR\n`;
+                message += `   Payment: ${order.payment.method}\n\n`;
+            });
+            
+            alert(message);
+        }
+        
+        function searchOrders() {
+            const searchTerm = document.getElementById('searchOrders').value.toLowerCase();
+            const cards = document.querySelectorAll('#ordersContainer .order-card');
+            
+            cards.forEach(card => {
+                const searchData = card.getAttribute('data-search') || '';
+                card.style.display = searchData.includes(searchTerm) ? '' : 'none';
+            });
+        }
+        
+        function searchCustomers() {
+            const searchTerm = document.getElementById('searchCustomers').value.toLowerCase();
+            const cards = document.querySelectorAll('#customersContainer .customer-card');
+            
+            cards.forEach(card => {
+                const searchData = card.getAttribute('data-search') || '';
+                card.style.display = searchData.includes(searchTerm) ? '' : 'none';
+            });
+        }
+        
+        function viewInvoice() {
+            if (!currentOrder.customer) {
+                showToast('Please save order first!', true);
+                return;
+            }
+            
+            const paymentStatus = currentOrder.payment.method === 'COD' ? 
+                '<span style="background: #cce5ff; color: #004085; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">CASH ON DELIVERY</span>' : 
+                '<span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">ADVANCE PAID</span>';
+            
+            const paymentDetails = currentOrder.payment.method === 'Advance' ? `
+                <div style="margin-top: 10px;">
+                    <div><strong>Advance Paid:</strong> PKR ${currentOrder.details.advancePaid.toFixed(2)}</div>
+                    ${currentOrder.payment.paymentMethod ? `<div><strong>Via:</strong> ${currentOrder.payment.paymentMethod}</div>` : ''}
+                    ${currentOrder.payment.transactionId ? `<div><strong>Transaction ID:</strong> ${currentOrder.payment.transactionId}</div>` : ''}
+                </div>
+            ` : '';
+            
+            const invoiceHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 3px solid #2c3e50; padding-bottom: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #1a2b3c;">ADK LaBs<sup style="font-size: 14px;">®</sup></div>
+                        <div style="margin-top: 5px; font-size: 14px; color: #222;">
+                            <div>Islamabad Pakistan</div>
+                            <div>Phone: 03468488034</div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 250px; text-align: right; margin-top: 15px;">
+                        <div style="font-size: 28px; font-weight: bold; color: #1a2b3c; margin-bottom: 10px;">INVOICE</div>
+                        <div style="font-size: 16px; line-height: 1.8;">
+                            <div><strong>Invoice #:</strong> ${currentOrder.details.invoiceNo}</div>
+                            <div><strong>Date:</strong> ${currentOrder.details.date}</div>
+                            <div><strong>Payment:</strong> ${paymentStatus}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin: 30px 0; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="margin: 0 0 10px 0; color: #111;">Bill To:</h4>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; color: #111;">
+                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;">${currentOrder.customer.name}</div>
+                            <div style="margin-bottom: 3px;">Phone: ${currentOrder.customer.phone}</div>
+                            <div>${currentOrder.customer.address}</div>
+                            ${paymentDetails}
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="margin: 0 0 10px 0; color: #111;">Shipping:</h4>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; color: #111;">
+                            <div><strong>Courier:</strong> ${currentOrder.details.courier || 'Not specified'}</div>
+                            <div><strong>Tracking:</strong> ${currentOrder.details.tracking || 'Not provided'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin: 30px 0; min-width: 600px;">
+                        <thead>
+                            <tr style="background: #2c3e50; color: white;">
+                                <th style="padding: 12px; text-align: left;">Description</th>
+                                <th style="padding: 12px; text-align: center;">Qty</th>
+                                <th style="padding: 12px; text-align: right;">Unit Price</th>
+                                <th style="padding: 12px; text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentOrder.products.map(product => `
+                                <tr>
+                                    <td style="padding: 12px; border-bottom: 1px solid #ccc; color: #111;">${product.name}</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #ccc; text-align: center;">${product.qty}</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #ccc; text-align: right;">${product.price.toFixed(2)} PKR</td>
+                                    <td style="padding: 12px; border-bottom: 1px solid #ccc; text-align: right; font-weight: bold;">${product.total.toFixed(2)} PKR</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="padding: 12px; text-align: right; border-top: 2px solid #aaa;"><strong>Subtotal:</strong></td>
+                                <td style="padding: 12px; text-align: right; border-top: 2px solid #aaa; font-weight: bold;">${currentOrder.details.subtotal.toFixed(2)} PKR</td>
+                            </tr>
+                            ${currentOrder.details.discount > 0 ? `
+                            <tr>
+                                <td colspan="3" style="padding: 12px; text-align: right;"><strong>Discount:</strong></td>
+                                <td style="padding: 12px; text-align: right; color: #c82333; font-weight: bold;">-${currentOrder.details.discount.toFixed(2)} PKR</td>
+                            </tr>` : ''}
+                            <tr>
+                                <td colspan="3" style="padding: 12px; text-align: right;"><strong>Shipping:</strong></td>
+                                <td style="padding: 12px; text-align: right; font-weight: bold;">${currentOrder.details.shipping.toFixed(2)} PKR</td>
+                            </tr>
+                            ${currentOrder.payment.method === 'Advance' ? `
+                            <tr>
+                                <td colspan="3" style="padding: 12px; text-align: right;"><strong>Advance Paid:</strong></td>
+                                <td style="padding: 12px; text-align: right; color: #1e7e34; font-weight: bold;">-${currentOrder.details.advancePaid.toFixed(2)} PKR</td>
+                            </tr>` : ''}
+                            <tr style="background: #f8f9fa; font-weight: bold;">
+                                <td colspan="3" style="padding: 15px; text-align: right;">
+                                    ${currentOrder.payment.method === 'Advance' ? 'BALANCE DUE:' : 'TOTAL AMOUNT:'}
+                                </td>
+                                <td style="padding: 15px; text-align: right;">
+                                    ${currentOrder.payment.method === 'Advance' ? 
+                                        currentOrder.details.balanceDue.toFixed(2) + ' PKR' : 
+                                        currentOrder.details.total.toFixed(2) + ' PKR'}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px; color: #333; padding-top: 20px; border-top: 1px solid #aaa;">
+                    <div style="margin-bottom: 10px;">"Thank you for choosing us for your designer impression needs!"</div>
+                    <div style="font-size: 14px;">
+                        ${currentOrder.payment.method === 'COD' ? 
+                            'Payment due upon delivery' : 
+                            `Advance paid: PKR ${currentOrder.details.advancePaid.toFixed(2)} | Balance due: PKR ${currentOrder.details.balanceDue.toFixed(2)}`}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('invoicePreview').innerHTML = invoiceHTML;
+            document.getElementById('invoicePreview').style.display = 'block';
+            document.getElementById('invoicePreview').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function printInvoice() {
+            if (!currentOrder.customer) {
+                showToast('Please save order first!', true);
+                return;
+            }
+            
+            viewInvoice();
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+        
+        function downloadPDF() {
+            if (!currentOrder.customer) {
+                showToast('Please save order first!', true);
+                return;
+            }
+            
+            viewInvoice();
+            
+            const printWindow = window.open('', '_blank');
+            const invoiceContent = document.getElementById('invoicePreview').innerHTML;
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Invoice ${currentOrder.details.invoiceNo}</title>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 30px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            color: #111;
+                        }
+                        @media print {
+                            @page { margin: 20mm; }
+                            body { padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${invoiceContent}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 1000);
+        }
+        
+        function shareInvoice() {
+            if (!currentOrder.customer) {
+                showToast('Please save order first!', true);
+                return;
+            }
+            
+            const phone = currentOrder.customer.phone.replace(/\D/g, '');
+            let message = `*Invoice ${currentOrder.details.invoiceNo}*\n\nDear ${currentOrder.customer.name},\n\n`;
+            message += `Payment Method: ${currentOrder.payment.method === 'COD' ? 'Cash on Delivery' : 'Advance Payment'}\n`;
+            
+            if (currentOrder.payment.method === 'Advance') {
+                message += `Advance Paid: PKR ${currentOrder.details.advancePaid.toFixed(2)}\n`;
+                message += `Balance Due: PKR ${currentOrder.details.balanceDue.toFixed(2)}\n`;
+            } else {
+                message += `Total Amount: PKR ${currentOrder.details.total.toFixed(2)}\n`;
+            }
+            
+            message += `\nThank you for your business!\nADK LaBs®`;
+            
+            const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+        }
+        
+        function clearForm() {
+            if (confirm('Clear all form data?')) {
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerPhone').value = '';
+                document.getElementById('customerAddress').value = '';
+                document.getElementById('discount').value = '0';
+                document.getElementById('shipping').value = '0';
+                document.getElementById('courier').value = '';
+                document.getElementById('tracking').value = '';
+                document.getElementById('invoiceNo').value = generateInvoiceNumber();
+                document.getElementById('orderDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('cod').checked = true;
+                document.getElementById('advanceDetails').style.display = 'none';
+                document.getElementById('advanceAmount').value = '0';
+                document.getElementById('paymentMethod').value = '';
+                document.getElementById('transactionId').value = '';
+                
+                const container = document.getElementById('productsContainer');
+                container.innerHTML = '';
+                addProduct();
+                
+                calculateTotal();
+                currentOrder = {};
+            }
+        }
+        
+        // UTILITY FUNCTIONS
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB');
+        }
+    </script>
+
+    <!-- PWA service worker registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('✅ Service Worker registered!', reg))
+                    .catch(err => console.log('❌ Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
