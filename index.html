@@ -312,6 +312,7 @@
             padding: 15px 20px;
             border-radius: 6px;
             display: none;
+            z-index: 1001;
         }
         
         .toast.error { background: #c82333; }
@@ -549,7 +550,7 @@
             document.getElementById('shippingDisplay').textContent = shipping.toFixed(2) + ' PKR';
             document.getElementById('balanceDisplay').textContent = balance.toFixed(2) + ' PKR';
             
-            return { subtotal, discount, shipping, advance, grandTotal, balance, products: [] };
+            return { subtotal, discount, shipping, advance, grandTotal, balance };
         }
         
         function saveOrder() {
@@ -622,12 +623,12 @@
         
         function loadOrdersCards() {
             const container = document.getElementById('ordersContainer');
-            if (allOrders.length === 0) { container.innerHTML = '<div class="empty-state">No orders yet</div>'; return; }
+            if (allOrders.length === 0) { container.innerHTML = '<div class="empty-state" style="text-align:center;padding:40px;">No orders yet</div>'; return; }
             
             let html = '';
             allOrders.forEach(order => {
                 html += `<div class="order-card">
-                    <div><strong>${order.details.invoiceNo}</strong> - ${order.details.date}</div>
+                    <div><strong>${order.details.invoiceNo}</strong> | ${order.details.date}</div>
                     <div>${order.customer.name} | ${order.customer.phone}</div>
                     <div>Total: ${order.details.total.toFixed(2)} PKR | ${order.payment.method}</div>
                     <div style="margin-top:10px">
@@ -642,12 +643,12 @@
         
         function loadCustomersCards() {
             const container = document.getElementById('customersContainer');
-            if (allCustomers.length === 0) { container.innerHTML = '<div class="empty-state">No customers yet</div>'; return; }
+            if (allCustomers.length === 0) { container.innerHTML = '<div class="empty-state" style="text-align:center;padding:40px;">No customers yet</div>'; return; }
             
             let html = '';
             allCustomers.forEach(cust => {
                 html += `<div class="customer-card">
-                    <div><strong>${cust.name}</strong> - ${cust.phone}</div>
+                    <div><strong>${cust.name}</strong> | ${cust.phone}</div>
                     <div>Orders: ${cust.totalOrders} | Total Spent: ${cust.totalSpent.toFixed(2)} PKR</div>
                     <div style="margin-top:10px">
                         <button class="btn btn-small btn-whatsapp" onclick="whatsAppCustomer('${cust.phone}')">WhatsApp</button>
@@ -701,7 +702,8 @@
             if (!currentOrder.customer) { showToast('Save order first!', true); return; }
             let html = `<h2>ADK LaBs®</h2><h3>Invoice: ${currentOrder.details.invoiceNo}</h3>
             <p><strong>Customer:</strong> ${currentOrder.customer.name}<br><strong>Phone:</strong> ${currentOrder.customer.phone}<br><strong>Address:</strong> ${currentOrder.customer.address}</p>
-            <table border="1" cellpadding="8" style="width:100%;border-collapse:collapse"><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>`;
+            <table border="1" cellpadding="8" style="width:100%;border-collapse:collapse">`;
+            html += `<tr style="background:#2c3e50;color:white"><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>`;
             currentOrder.products.forEach(p => { html += `<tr><td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total.toFixed(2)}</td></tr>`; });
             html += `</table><h3>Total: ${currentOrder.details.total.toFixed(2)} PKR</h3>`;
             document.getElementById('invoicePreview').innerHTML = html;
@@ -727,29 +729,32 @@
         }
         
         function showImportModal() { document.getElementById('importModal').style.display = 'flex'; }
-        function hideImportModal() { document.getElementById('importModal').style.display = 'none'; }
+        function hideImportModal() { document.getElementById('importModal').style.display = 'none'; document.getElementById('importData').value = ''; }
         
         function importData() {
             try {
                 const data = JSON.parse(document.getElementById('importData').value);
-                if (data.orders && data.customers) {
-                    allOrders = data.orders;
-                    allCustomers = data.customers;
-                    saveAllData();
-                    updateStats();
-                    hideImportModal();
-                    showToast('Data imported!');
-                }
+                if (data.orders) allOrders = data.orders;
+                if (data.customers) allCustomers = data.customers;
+                saveAllData();
+                updateStats();
+                hideImportModal();
+                showToast('Data imported!');
             } catch(e) { showToast('Invalid data!', true); }
         }
         
         function clearAllData() {
             if (confirm('Delete ALL data?')) {
-                allOrders = [];
-                allCustomers = [];
-                saveAllData();
-                updateStats();
-                showToast('All data cleared');
+                if (confirm('Type "DELETE" to confirm:')) {
+                    const confirmText = prompt('Type DELETE to confirm:');
+                    if (confirmText === 'DELETE') {
+                        allOrders = [];
+                        allCustomers = [];
+                        saveAllData();
+                        updateStats();
+                        showToast('All data cleared');
+                    }
+                }
             }
         }
         
@@ -759,6 +764,7 @@
             document.getElementById('customerAddress').value = '';
             document.getElementById('discount').value = '0';
             document.getElementById('shipping').value = '0';
+            document.getElementById('advanceAmount').value = '0';
             document.getElementById('invoiceNo').value = generateInvoiceNumber();
             document.getElementById('productsContainer').innerHTML = '';
             addProduct();
@@ -767,14 +773,14 @@
         
         function searchOrders() {
             const term = document.getElementById('searchOrders').value.toLowerCase();
-            document.querySelectorAll('.order-card').forEach(card => {
+            document.querySelectorAll('#ordersContainer .order-card').forEach(card => {
                 card.style.display = card.innerText.toLowerCase().includes(term) ? '' : 'none';
             });
         }
         
         function searchCustomers() {
             const term = document.getElementById('searchCustomers').value.toLowerCase();
-            document.querySelectorAll('.customer-card').forEach(card => {
+            document.querySelectorAll('#customersContainer .customer-card').forEach(card => {
                 card.style.display = card.innerText.toLowerCase().includes(term) ? '' : 'none';
             });
         }
@@ -786,37 +792,51 @@
             toast.style.display = 'block';
             setTimeout(() => toast.style.display = 'none', 3000);
         }
+    </script>
+    
+    <!-- FIXED SERVICE WORKER REGISTRATION -->
     <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/adk-invoice-pwa/sw.js', { scope: '/adk-invoice-pwa/' })
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Register service worker with correct scope
+                navigator.serviceWorker.register('/adk-invoice-pwa/sw.js', { 
+                    scope: '/adk-invoice-pwa/' 
+                })
                 .then(reg => {
-                    console.log('✅ Service Worker registered!', reg);
+                    console.log('✅ Service Worker registered successfully!', reg);
+                    
                     // Check for updates
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
                             if (installingWorker.state === 'installed') {
                                 if (navigator.serviceWorker.controller) {
-                                    console.log('New content available - refresh to update');
-                                    showToast('🔄 App updated! Refresh to get latest version');
+                                    console.log('🔄 New content available - refresh to update');
+                                    const toast = document.getElementById('toast');
+                                    if (toast) {
+                                        toast.textContent = '🔄 App updated! Refresh to get latest version';
+                                        toast.style.display = 'block';
+                                        setTimeout(() => toast.style.display = 'none', 5000);
+                                    }
                                 }
                             }
                         };
                     };
                 })
-                .catch(err => console.log('❌ Service Worker failed:', err));
-        });
-    }
-    
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        if (toast) {
-            toast.textContent = msg;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 3000);
+                .catch(err => {
+                    console.log('❌ Service Worker registration failed:', err);
+                });
+            });
         }
-    }
-</script>
+        
+        // Handle offline detection
+        window.addEventListener('online', () => {
+            console.log('🟢 App is online');
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('🔴 App is offline - working from cache');
+        });
+    </script>
 </body>
 </html>
